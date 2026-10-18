@@ -1,3 +1,4 @@
+
 import java.util.Scanner;
 
 import DAO.BookDAO;
@@ -15,20 +16,20 @@ import service.Library;
 
 public class Main {
 
-    public static void main(String[] args) {
+    private static final Scanner scanner = new Scanner(System.in);
 
-        Scanner scanner = new Scanner(System.in);
+    public static void main(String[] args) {
 
         BookDAO bookDAO = new MySQLBookDAO();
         MemberDAO memberDAO = new MySQLMemberDAO();
         BorrowRecordDAO borrowRecordDAO = new MySQLBorrowRecordDAO();
 
-        Library library = new Library(bookDAO, memberDAO, borrowRecordDAO);
+        Library library = new Library(
+                bookDAO, memberDAO, borrowRecordDAO);
 
         int choice;
 
         do {
-
             System.out.println();
             System.out.println("==================================");
             System.out.println("     LIBRARY MANAGEMENT SYSTEM");
@@ -43,94 +44,146 @@ public class Main {
             System.out.println("7. View Borrow Records");
             System.out.println("8. Exit");
 
-            System.out.print("Enter your choice: ");
-            choice = scanner.nextInt();
+            choice = readInt("Enter your choice: ");
 
             switch (choice) {
 
-                case 1:
+                case 1: {
+                    int bookId = readPositiveInt("Enter Book ID: ");
 
-                    scanner.nextLine();
-
-                    System.out.print("Enter Book ID: ");
-                    int bookId = scanner.nextInt();
-
-                    scanner.nextLine();
-
-                    System.out.print("Enter Book Title: ");
-                    String title = scanner.nextLine();
-
-                    System.out.print("Enter Author: ");
-                    String author = scanner.nextLine();
+                    String title = readNonEmpty("Enter Book Title: ");
+                    String author = readNonEmpty("Enter Author: ");
 
                     library.addBook(new Book(bookId, title, author));
                     break;
+                }
 
                 case 2:
-
                     library.displayBooks();
                     break;
 
-                case 3:
+                case 3: {
+                    int memberId = readPositiveInt("Enter Member ID: ");
 
-                    System.out.print("Enter Member ID: ");
-                    int memberId = scanner.nextInt();
-
-                    scanner.nextLine();
-
-                    System.out.print("Enter Member Name: ");
-                    String name = scanner.nextLine();
-
-                    System.out.print("Enter Phone: ");
-                    String phone = scanner.nextLine();
+                    String name = readNonEmpty("Enter Member Name: ");
+                    String phone = readPhone();
 
                     library.addMember(new Member(memberId, name, phone));
                     break;
+                }
 
                 case 4:
-
                     library.displayMembers();
                     break;
 
-                case 5:
+                case 5: {
+                    int issueBookId =
+                            readPositiveInt("Enter Book ID: ");
 
-                    System.out.print("Enter Book ID: ");
-                    int issueBookId = scanner.nextInt();
-
-                    System.out.print("Enter Member ID: ");
-                    int issueMemberId = scanner.nextInt();
+                    int issueMemberId =
+                            readPositiveInt("Enter Member ID: ");
 
                     library.issueBook(issueBookId, issueMemberId);
                     break;
+                }
 
-                case 6:
+                case 6: {
+                    int returnBookId =
+                            readPositiveInt("Enter Book ID: ");
 
-                    System.out.print("Enter Book ID: ");
-                    int returnBookId = scanner.nextInt();
-
-                    System.out.print("Enter Member ID: ");
-                    int returnMemberId = scanner.nextInt();
+                    int returnMemberId =
+                            readPositiveInt("Enter Member ID: ");
 
                     library.returnBook(returnBookId, returnMemberId);
                     break;
+                }
 
                 case 7:
-
                     library.displayRecords();
                     break;
 
                 case 8:
-
-                    System.out.println("\nThank you for using the Library Management System!");
+                    System.out.println(
+                            "\nThank you for using the Library Management System!");
                     break;
 
                 default:
-
-                    System.out.println("Invalid choice.");
+                    System.out.println(
+                            "Invalid choice. Please select an option from 1 to 8.");
             }
 
         } while (choice != 8);
 
         scanner.close();
+    }
+
+    // Reads an integer without crashing on non-numeric input.
+    private static int readInt(String prompt) {
+
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println(
+                        "Invalid input. Please enter a whole number.");
+            }
+        }
+    }
+
+    // Reads a positive integer for IDs.
+    private static int readPositiveInt(String prompt) {
+
+        while (true) {
+            int value = readInt(prompt);
+
+            if (value > 0) {
+                return value;
+            }
+
+            System.out.println("ID must be greater than zero.");
+        }
+    }
+
+    // Rejects empty or whitespace-only text.
+    private static String readNonEmpty(String prompt) {
+
+        while (true) {
+            System.out.print(prompt);
+            String value = scanner.nextLine().trim();
+
+            if (!value.isEmpty()) {
+                return value;
+            }
+
+            System.out.println("This field cannot be empty.");
+        }
+    }
+
+    // Accepts common phone-number formatting and checks digit count.
+    private static String readPhone() {
+
+        while (true) {
+            String phone = readNonEmpty("Enter Phone: ");
+
+            if (!phone.matches("[+0-9()\\s-]+")) {
+                System.out.println(
+                        "Invalid phone format. Use digits and optional +, spaces, - or parentheses.");
+                continue;
+            }
+
+            long digitCount = phone.chars()
+                    .filter(Character::isDigit)
+                    .count();
+
+            if (digitCount >= 7 && digitCount <= 15) {
+                return phone;
+            }
+
+            System.out.println(
+                    "Phone number must contain between 7 and 15 digits.");
+        }
     }
 }
