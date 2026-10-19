@@ -1,4 +1,3 @@
-
 import java.util.Scanner;
 
 import DAO.BookDAO;
@@ -13,7 +12,6 @@ import model.Book;
 import model.Member;
 
 import service.Library;
-
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -24,9 +22,7 @@ public class Main {
         MemberDAO memberDAO = new MySQLMemberDAO();
         BorrowRecordDAO borrowRecordDAO = new MySQLBorrowRecordDAO();
 
-        Library library = new Library(
-                bookDAO, memberDAO, borrowRecordDAO);
-
+        Library library = new Library(bookDAO, memberDAO, borrowRecordDAO);
         int choice;
 
         do {
@@ -64,7 +60,6 @@ public class Main {
 
                 case 3: {
                     int memberId = readPositiveInt("Enter Member ID: ");
-
                     String name = readNonEmpty("Enter Member Name: ");
                     String phone = readPhone();
 
@@ -77,23 +72,15 @@ public class Main {
                     break;
 
                 case 5: {
-                    int issueBookId =
-                            readPositiveInt("Enter Book ID: ");
-
-                    int issueMemberId =
-                            readPositiveInt("Enter Member ID: ");
-
+                    int issueBookId = readPositiveInt("Enter Book ID: ");
+                    int issueMemberId = readPositiveInt("Enter Member ID: ");
                     library.issueBook(issueBookId, issueMemberId);
                     break;
                 }
 
                 case 6: {
-                    int returnBookId =
-                            readPositiveInt("Enter Book ID: ");
-
-                    int returnMemberId =
-                            readPositiveInt("Enter Member ID: ");
-
+                    int returnBookId = readPositiveInt("Enter Book ID: ");
+                    int returnMemberId = readPositiveInt("Enter Member ID: ");
                     library.returnBook(returnBookId, returnMemberId);
                     break;
                 }
@@ -103,13 +90,11 @@ public class Main {
                     break;
 
                 case 8:
-                    System.out.println(
-                            "\nThank you for using the Library Management System!");
+                    System.out.println("\nThank you for using the Library Management System!");
                     break;
 
                 default:
-                    System.out.println(
-                            "Invalid choice. Please select an option from 1 to 8.");
+                    System.out.println("Invalid choice. Please select an option from 1 to 8.");
             }
 
         } while (choice != 8);
@@ -127,8 +112,7 @@ public class Main {
             try {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println(
-                        "Invalid input. Please enter a whole number.");
+                System.out.println("Invalid input. Please enter a whole number.");
             }
         }
     }
@@ -169,21 +153,17 @@ public class Main {
             String phone = readNonEmpty("Enter Phone: ");
 
             if (!phone.matches("[+0-9()\\s-]+")) {
-                System.out.println(
-                        "Invalid phone format. Use digits and optional +, spaces, - or parentheses.");
+                System.out.println("Invalid phone format. Use digits and optional +, spaces, - or parentheses.");
                 continue;
             }
 
-            long digitCount = phone.chars()
-                    .filter(Character::isDigit)
-                    .count();
+            long digitCount = phone.chars().filter(Character::isDigit).count();
 
             if (digitCount >= 7 && digitCount <= 15) {
                 return phone;
             }
 
-            System.out.println(
-                    "Phone number must contain between 7 and 15 digits.");
+            System.out.println("Phone number must contain between 7 and 15 digits.");
         }
     }
 }

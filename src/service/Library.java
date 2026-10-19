@@ -1,4 +1,3 @@
-
 package service;
 
 import java.util.ArrayList;
@@ -21,9 +20,8 @@ public class Library {
     private MemberDAO memberDAO;
     private BorrowRecordDAO borrowRecordDAO;
 
-    public Library(BookDAO bookDAO, MemberDAO memberDAO,
-                   BorrowRecordDAO borrowRecordDAO) {
-
+    public Library(BookDAO bookDAO, MemberDAO memberDAO, BorrowRecordDAO borrowRecordDAO) 
+    {
         this.bookDAO = bookDAO;
         this.memberDAO = memberDAO;
         this.borrowRecordDAO = borrowRecordDAO;
@@ -60,8 +58,7 @@ public class Library {
             System.out.println("Book ID   : " + book.getBookId());
             System.out.println("Title     : " + book.getTitle());
             System.out.println("Author    : " + book.getAuthor());
-            System.out.println("Status    : "
-                    + (book.isAvailable() ? "Available" : "Issued"));
+            System.out.println("Status    : " + (book.isAvailable() ? "Available" : "Issued"));
             System.out.println("--------------------------------");
         }
     }
@@ -72,7 +69,6 @@ public class Library {
                 return book;
             }
         }
-
         return null;
     }
 
@@ -88,9 +84,7 @@ public class Library {
             return;
         }
 
-        System.out.println(
-                "\n--------------- ALL MEMBERS OF LIBRARY ----------------");
-
+        System.out.println("\n--------------- ALL MEMBERS OF LIBRARY ----------------");
         for (Member member : members) {
             System.out.println("--------------------------------");
             System.out.println("Member ID : " + member.getMemberId());
@@ -107,7 +101,6 @@ public class Library {
                 return member;
             }
         }
-
         return null;
     }
 
@@ -119,11 +112,9 @@ public class Library {
             if (record.getBook().getBookId() == bookId
                     && record.getMember().getMemberId() == memberId
                     && record.getReturnDate() == null) {
-
                 return record;
             }
         }
-
         return null;
     }
 
@@ -182,12 +173,10 @@ public class Library {
         }
 
         // Validate ownership before changing anything.
-        BorrowRecord activeRecord =
-                findActiveBorrowRecord(bookId, memberId);
+        BorrowRecord activeRecord = findActiveBorrowRecord(bookId, memberId);
 
         if (activeRecord == null) {
-            System.out.println(
-                    "This member does not have an active record for this book.");
+            System.out.println("This member does not have an active record for this book.");
             return;
         }
 
@@ -211,7 +200,6 @@ public class Library {
         }
 
         System.out.println("\n---------------- BORROW RECORDS -----------------");
-
         for (BorrowRecord record : records) {
             System.out.println("--------------------------------");
             System.out.println("Book   : " + record.getBook().getTitle());
