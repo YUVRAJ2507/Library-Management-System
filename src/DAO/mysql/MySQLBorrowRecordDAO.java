@@ -1,4 +1,4 @@
-package DAO.mysql;
+package dao.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
-import DAO.BorrowRecordDAO;
 import config.DatabaseConnection;
+import dao.BorrowRecordDAO;
 import model.Book;
 import model.BorrowRecord;
 import model.Member;

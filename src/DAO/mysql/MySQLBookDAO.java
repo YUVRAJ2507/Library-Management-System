@@ -1,12 +1,12 @@
-package DAO.mysql;
+package dao.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-import DAO.BookDAO;
 import config.DatabaseConnection;
+import dao.BookDAO;
 import model.Book;
 
 public class MySQLBookDAO implements BookDAO {

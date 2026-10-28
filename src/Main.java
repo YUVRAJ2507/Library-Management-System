@@ -1,13 +1,11 @@
 import java.util.Scanner;
 
-import DAO.BookDAO;
-import DAO.MemberDAO;
-import DAO.BorrowRecordDAO;
-
-import DAO.mysql.MySQLBookDAO;
-import DAO.mysql.MySQLMemberDAO;
-import DAO.mysql.MySQLBorrowRecordDAO;
-
+import dao.BookDAO;
+import dao.BorrowRecordDAO;
+import dao.MemberDAO;
+import dao.mysql.MySQLBookDAO;
+import dao.mysql.MySQLBorrowRecordDAO;
+import dao.mysql.MySQLMemberDAO;
 import model.Book;
 import model.Member;
 

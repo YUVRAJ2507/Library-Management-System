@@ -2,10 +2,9 @@ package service;
 
 import java.util.ArrayList;
 
-import DAO.BookDAO;
-import DAO.MemberDAO;
-import DAO.BorrowRecordDAO;
-
+import dao.BookDAO;
+import dao.BorrowRecordDAO;
+import dao.MemberDAO;
 import model.Book;
 import model.Member;
 import model.BorrowRecord;
