@@ -1,9 +1,9 @@
 package dao;
 
-import java.util.ArrayList;
+import java.util.List;
 import model.Member;
-
 public interface MemberDAO {
-    void addMember(Member member);
-    ArrayList<Member> getAllMembers();
+
+    void addMember(Member member) throws Exception;
+    List<Member> getAllMembers() throws Exception;
 }

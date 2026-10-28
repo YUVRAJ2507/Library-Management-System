@@ -11,35 +11,49 @@ import model.BorrowRecord;
 
 public class Library {
 
-    private ArrayList<Book> books;
-    private ArrayList<Member> members;
-    private ArrayList<BorrowRecord> records;
+    private final ArrayList<Book> books;
+    private final ArrayList<Member> members;
+    private final ArrayList<BorrowRecord> records;
 
-    private BookDAO bookDAO;
-    private MemberDAO memberDAO;
-    private BorrowRecordDAO borrowRecordDAO;
+    private final BookDAO bookDAO;
+    private final MemberDAO memberDAO;
+    private final BorrowRecordDAO borrowRecordDAO;
 
-    public Library(BookDAO bookDAO, MemberDAO memberDAO, BorrowRecordDAO borrowRecordDAO) 
-    {
+    public Library(
+            BookDAO bookDAO,
+            MemberDAO memberDAO,
+            BorrowRecordDAO borrowRecordDAO) {
+
         this.bookDAO = bookDAO;
         this.memberDAO = memberDAO;
         this.borrowRecordDAO = borrowRecordDAO;
 
-        books = bookDAO.getAllBooks();
-        members = memberDAO.getAllMembers();
-        records = borrowRecordDAO.getAllBorrowRecords(books, members);
+        try {
+            books = new ArrayList<>(bookDAO.getAllBooks());
+            members = new ArrayList<>(memberDAO.getAllMembers());
+            records = new ArrayList<>(
+                    borrowRecordDAO.getAllBorrowRecords(books, members));
 
-        // Reconstruct each member's active borrowings.
-        for (BorrowRecord record : records) {
-            if (record.getReturnDate() == null) {
-                record.getMember().borrowBook(record.getBook());
+            // Reconstruct each member's active borrowings.
+            for (BorrowRecord record : records) {
+                if (record.getReturnDate() == null) {
+                    record.getMember().borrowBook(record.getBook());
+                }
             }
+
+        } catch (Exception e) {
+            throw new IllegalStateException( "Unable to initialize the library from the database.", e);
         }
     }
 
     public void addBook(Book book) {
-        bookDAO.addBook(book);
-        books.add(book);
+        try {
+            bookDAO.addBook(book);
+            books.add(book);
+
+        } catch (Exception e) {
+            System.out.println("Unable to add book: " + e.getMessage());
+        }
     }
 
     public void displayBooks() {
@@ -51,18 +65,18 @@ public class Library {
 
         System.out.println(
                 "\n-------------- BOOKS AVAILABILITY IN LIBRARY -----------------");
-
         for (Book book : books) {
             System.out.println("--------------------------------");
             System.out.println("Book ID   : " + book.getBookId());
             System.out.println("Title     : " + book.getTitle());
             System.out.println("Author    : " + book.getAuthor());
-            System.out.println("Status    : " + (book.isAvailable() ? "Available" : "Issued"));
+            System.out.println("Status    : "+ (book.isAvailable() ? "Available" : "Issued"));
             System.out.println("--------------------------------");
         }
     }
 
     public Book findBook(int bookId) {
+
         for (Book book : books) {
             if (book.getBookId() == bookId) {
                 return book;
@@ -72,8 +86,14 @@ public class Library {
     }
 
     public void addMember(Member member) {
-        memberDAO.addMember(member);
-        members.add(member);
+
+        try {
+            memberDAO.addMember(member);
+            members.add(member);
+
+        } catch (Exception e) {
+            System.out.println("Unable to add member: " + e.getMessage());
+        }
     }
 
     public void displayMembers() {
@@ -84,6 +104,7 @@ public class Library {
         }
 
         System.out.println("\n--------------- ALL MEMBERS OF LIBRARY ----------------");
+
         for (Member member : members) {
             System.out.println("--------------------------------");
             System.out.println("Member ID : " + member.getMemberId());
@@ -95,15 +116,16 @@ public class Library {
     }
 
     public Member findMember(int memberId) {
+
         for (Member member : members) {
             if (member.getMemberId() == memberId) {
                 return member;
             }
         }
+
         return null;
     }
 
-    // Find the active borrowing record for a specific book and member.
     private BorrowRecord findActiveBorrowRecord(int bookId, int memberId) {
 
         for (BorrowRecord record : records) {
@@ -137,18 +159,34 @@ public class Library {
             return;
         }
 
-        // Prepare the borrowing record before changing in-memory state.
         BorrowRecord record = new BorrowRecord(book, member);
 
-        bookDAO.updateAvailability(bookId, false);
-        borrowRecordDAO.addBorrowRecord(record);
+        try {
+            bookDAO.updateAvailability(bookId, false);
 
-        // Update the application's in-memory state.
-        book.issueBook();
-        member.borrowBook(book);
-        records.add(record);
+            try {
+                borrowRecordDAO.addBorrowRecord(record);
+            } catch (Exception e) {
+                // Compensate if inserting the borrowing record fails.
+                try {
+                    bookDAO.updateAvailability(bookId, true);
+                } catch (Exception rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
 
-        System.out.println("Book issued successfully.");
+                throw e;
+            }
+
+            // Update memory only after both database operations succeed.
+            book.issueBook();
+            member.borrowBook(book);
+            records.add(record);
+
+            System.out.println("Book issued successfully.");
+
+        } catch (Exception e) {
+            System.out.println("Unable to issue book: " + e.getMessage());
+        }
     }
 
     public void returnBook(int bookId, int memberId) {
@@ -171,7 +209,6 @@ public class Library {
             return;
         }
 
-        // Validate ownership before changing anything.
         BorrowRecord activeRecord = findActiveBorrowRecord(bookId, memberId);
 
         if (activeRecord == null) {
@@ -179,26 +216,42 @@ public class Library {
             return;
         }
 
-        // Persist the requested changes.
-        bookDAO.updateAvailability(bookId, true);
-        borrowRecordDAO.updateReturnDate(bookId, memberId);
+        try {
+            bookDAO.updateAvailability(bookId, true);
 
-        // Update the application's in-memory state.
-        activeRecord.returnBook();
-        book.returnBook();
-        member.returnBook(book);
+            try {
+                borrowRecordDAO.updateReturnDate(bookId, memberId);
+            } catch (Exception e) {
+                // Compensate if updating the return date fails.
+                try {
+                    bookDAO.updateAvailability(bookId, false);
+                } catch (Exception rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
 
-        System.out.println("Book returned successfully.");
+            // Update memory only after both database operations succeed.
+            activeRecord.returnBook();
+            book.returnBook();
+            member.returnBook(book);
+
+            System.out.println("Book returned successfully.");
+
+        } catch (Exception e) {
+            System.out.println("Unable to return book: " + e.getMessage());
+        }
     }
 
     public void displayRecords() {
-
+        
         if (records.isEmpty()) {
             System.out.println("No borrowing records.");
             return;
         }
 
         System.out.println("\n---------------- BORROW RECORDS -----------------");
+
         for (BorrowRecord record : records) {
             System.out.println("--------------------------------");
             System.out.println("Book   : " + record.getBook().getTitle());

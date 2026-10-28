@@ -1,9 +1,9 @@
 package dao;
-import java.util.ArrayList;
-import model.Book;
 
+import java.util.List;
+import model.Book;
 public interface BookDAO {
-    void addBook(Book book);
-    ArrayList<Book> getAllBooks();
-    void updateAvailability(int bookId, boolean available);
+    void addBook(Book book) throws Exception;
+    List<Book> getAllBooks() throws Exception;
+    void updateAvailability(int bookId, boolean available) throws Exception;
 }

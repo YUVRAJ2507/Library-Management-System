@@ -3,13 +3,16 @@ import java.util.Scanner;
 import dao.BookDAO;
 import dao.BorrowRecordDAO;
 import dao.MemberDAO;
+
 import dao.mysql.MySQLBookDAO;
 import dao.mysql.MySQLBorrowRecordDAO;
 import dao.mysql.MySQLMemberDAO;
+
 import model.Book;
 import model.Member;
 
 import service.Library;
+
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -20,7 +23,25 @@ public class Main {
         MemberDAO memberDAO = new MySQLMemberDAO();
         BorrowRecordDAO borrowRecordDAO = new MySQLBorrowRecordDAO();
 
-        Library library = new Library(bookDAO, memberDAO, borrowRecordDAO);
+        Library library;
+
+        // Initialize the library and load data from the database.
+        try {
+            library = new Library(
+                    bookDAO,
+                    memberDAO,
+                    borrowRecordDAO
+            );
+
+        } catch (IllegalStateException e) {
+            System.out.println(
+                    "Unable to start the Library Management System.");
+            System.out.println(
+                    "Please check your database connection and configuration.");
+            System.out.println("Details: " + e.getMessage());
+            return;
+        }
+
         int choice;
 
         do {
@@ -44,7 +65,6 @@ public class Main {
 
                 case 1: {
                     int bookId = readPositiveInt("Enter Book ID: ");
-
                     String title = readNonEmpty("Enter Book Title: ");
                     String author = readNonEmpty("Enter Author: ");
 
@@ -61,7 +81,8 @@ public class Main {
                     String name = readNonEmpty("Enter Member Name: ");
                     String phone = readPhone();
 
-                    library.addMember(new Member(memberId, name, phone));
+                    library.addMember(
+                            new Member(memberId, name, phone));
                     break;
                 }
 
@@ -70,16 +91,18 @@ public class Main {
                     break;
 
                 case 5: {
-                    int issueBookId = readPositiveInt("Enter Book ID: ");
-                    int issueMemberId = readPositiveInt("Enter Member ID: ");
-                    library.issueBook(issueBookId, issueMemberId);
+                    int bookId = readPositiveInt("Enter Book ID: ");
+                    int memberId = readPositiveInt("Enter Member ID: ");
+
+                    library.issueBook(bookId, memberId);
                     break;
                 }
 
                 case 6: {
-                    int returnBookId = readPositiveInt("Enter Book ID: ");
-                    int returnMemberId = readPositiveInt("Enter Member ID: ");
-                    library.returnBook(returnBookId, returnMemberId);
+                    int bookId = readPositiveInt("Enter Book ID: ");
+                    int memberId = readPositiveInt("Enter Member ID: ");
+
+                    library.returnBook(bookId, memberId);
                     break;
                 }
 
@@ -88,11 +111,13 @@ public class Main {
                     break;
 
                 case 8:
-                    System.out.println("\nThank you for using the Library Management System!");
+                    System.out.println(
+                            "\nThank you for using the Library Management System!");
                     break;
 
                 default:
-                    System.out.println("Invalid choice. Please select an option from 1 to 8.");
+                    System.out.println(
+                            "Invalid choice. Please select an option from 1 to 8.");
             }
 
         } while (choice != 8);
@@ -100,7 +125,7 @@ public class Main {
         scanner.close();
     }
 
-    // Reads an integer without crashing on non-numeric input.
+    // Reads an integer and handles non-numeric input.
     private static int readInt(String prompt) {
 
         while (true) {
@@ -110,12 +135,13 @@ public class Main {
             try {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a whole number.");
+                System.out.println(
+                        "Invalid input. Please enter a whole number.");
             }
         }
     }
 
-    // Reads a positive integer for IDs.
+    // Accepts only positive IDs.
     private static int readPositiveInt(String prompt) {
 
         while (true) {
@@ -129,7 +155,7 @@ public class Main {
         }
     }
 
-    // Rejects empty or whitespace-only text.
+    // Rejects empty or whitespace-only input.
     private static String readNonEmpty(String prompt) {
 
         while (true) {
@@ -144,14 +170,15 @@ public class Main {
         }
     }
 
-    // Accepts common phone-number formatting and checks digit count.
+    // Validates phone-number formatting and digit count.
     private static String readPhone() {
 
         while (true) {
             String phone = readNonEmpty("Enter Phone: ");
 
             if (!phone.matches("[+0-9()\\s-]+")) {
-                System.out.println("Invalid phone format. Use digits and optional +, spaces, - or parentheses.");
+                System.out.println(
+                        "Invalid phone format. Use digits and optional +, spaces, - or parentheses.");
                 continue;
             }
 
